@@ -5,6 +5,7 @@ import com.aegis.backend.dto.AuthRequest;
 import com.aegis.backend.dto.AuthResponse;
 import com.aegis.backend.dto.RegisterRequest;
 import com.aegis.backend.entity.User;
+import com.aegis.backend.mapper.UserMapper;
 import com.aegis.backend.service.UserService;
 import com.aegis.backend.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -26,12 +27,17 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
 
     public AuthController(
-            final AuthenticationManager authenticationManager, final UserService userService, final JwtUtil jwtUtil) {
+            final AuthenticationManager authenticationManager,
+            final UserService userService,
+            final JwtUtil jwtUtil,
+            final UserMapper userMapper) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.userMapper = userMapper;
     }
 
     @PostMapping("/register")
@@ -50,13 +56,7 @@ public class AuthController {
         final String token = jwtUtil.generateToken(userDetails);
         final User user = (User) userDetails;
 
-        final AuthResponse authResponse = AuthResponse.builder()
-                .accessToken(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .build();
+        final AuthResponse authResponse = userMapper.toAuthResponse(user, token);
 
         return ResponseEntity.ok(ApiResponse.success(authResponse, "Authentication successful"));
     }
