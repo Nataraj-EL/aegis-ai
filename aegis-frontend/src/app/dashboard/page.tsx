@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -22,8 +22,17 @@ import {
   LogOut,
   ShieldCheck,
   ShieldAlert,
-  Loader2
+  Loader2,
+  Send,
+  Sparkles
 } from "lucide-react";
+
+interface Message {
+  role: "user" | "agent";
+  content: string;
+  model?: string;
+  executionTime?: number;
+}
 
 export default function Dashboard() {
   const router = useRouter();
@@ -32,6 +41,12 @@ export default function Dashboard() {
   const [apiStatus, setApiStatus] = useState<"connecting" | "success" | "error">("connecting");
   const [apiMessage, setApiMessage] = useState<string>("Initializing verification...");
   const [logs, setLogs] = useState<Array<string>>([]);
+  
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const addLog = (message: string) => {
     const timestamp = new Date().toISOString().split('T')[1].substring(0, 8);
@@ -80,10 +95,60 @@ export default function Dashboard() {
     verifyToken();
   }, [router]);
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
   const handleLogout = () => {
     localStorage.removeItem("aegis_token");
     localStorage.removeItem("aegis_username");
     router.push("/login");
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || sending) return;
+
+    const userQuery = inputMessage.trim();
+    setInputMessage("");
+    setSending(true);
+
+    // Add user message
+    setChatMessages((prev) => [...prev, { role: "user", content: userQuery }]);
+    addLog(`USER: Sent task request: "${userQuery.substring(0, 30)}..."`);
+
+    try {
+      addLog("AGENT: Invoking CEO Orchestrator Agent...");
+      const response = await api.post("/v1/agent/chat", { message: userQuery });
+      
+      if (response.data.success) {
+        const { response: agentResponse, model, executionTime } = response.data.data;
+        
+        setChatMessages((prev) => [
+          ...prev, 
+          { 
+            role: "agent", 
+            content: agentResponse,
+            model,
+            executionTime
+          }
+        ]);
+        
+        addLog(`AGENT: CEO Orchestrator resolved request in ${executionTime}ms via ${model}.`);
+      } else {
+        throw new Error(response.data.message || "Failed to process agent chat request");
+      }
+    } catch (error: any) {
+      console.error(error);
+      const errMsg = error.response?.data?.message || "Internal execution error in agent model.";
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "agent", content: `❌ Error: ${errMsg}` }
+      ]);
+      addLog(`ERROR: Agent invocation failed - ${errMsg}`);
+    } finally {
+      setSending(false);
+    }
   };
 
   if (authenticated === null) {
@@ -112,9 +177,9 @@ export default function Dashboard() {
             <LayoutDashboard className="h-4 w-4" />
             Overview
           </Link>
-          <button className="w-full flex items-center gap-3 rounded px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 transition-all cursor-not-allowed">
-            <Cpu className="h-4 w-4" />
-            Agent Registry <span className="ml-auto text-[9px] bg-zinc-900 px-1.5 py-0.5 rounded text-zinc-600">Sprint 3</span>
+          <button className="w-full flex items-center gap-3 rounded px-3 py-2 text-xs font-medium text-zinc-300 bg-transparent hover:bg-zinc-900/30 transition-all cursor-default">
+            <Cpu className="h-4 w-4 text-zinc-400" />
+            CEO Orchestrator <span className="ml-auto text-[9px] bg-zinc-900 px-1.5 py-0.5 rounded text-emerald-400 font-medium">Active</span>
           </button>
           <button className="w-full flex items-center gap-3 rounded px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 transition-all cursor-not-allowed">
             <Activity className="h-4 w-4" />
@@ -186,8 +251,8 @@ export default function Dashboard() {
             <div className="rounded border border-zinc-900 bg-zinc-950/40 p-5">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Active Agents</span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-bold text-white font-mono">0</span>
-                <span className="text-[10px] text-zinc-500">configured</span>
+                <span className="text-2xl font-bold text-white font-mono">1</span>
+                <span className="text-[10px] text-zinc-500">CEO Orchestrator</span>
               </div>
             </div>
             <div className="rounded border border-zinc-900 bg-zinc-950/40 p-5">
@@ -242,28 +307,84 @@ export default function Dashboard() {
           {/* Main Workspace Panels */}
           <div className="grid gap-6 lg:grid-cols-3">
             
-            {/* Agent Registry Panel */}
-            <div className="lg:col-span-2 rounded border border-zinc-900 bg-zinc-950/30 p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+            {/* CEO Agent Chat Interface */}
+            <div className="lg:col-span-2 rounded border border-zinc-900 bg-zinc-950/30 p-6 flex flex-col h-[500px]">
+              <div className="flex items-center justify-between border-b border-zinc-900 pb-4 mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Agent Node Registry</h3>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">Local executing agent profiles and their live status.</p>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-400" /> CEO Orchestrator Console
+                  </h3>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Direct chat interface with the centralized coordinator agent.</p>
                 </div>
-                <button className="inline-flex items-center gap-1.5 rounded border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-400 cursor-not-allowed">
-                  <RefreshCw className="h-3 w-3" /> Refresh
-                </button>
+                <div className="inline-flex items-center gap-1.5 rounded border border-zinc-900 bg-zinc-950 px-2 py-1 text-[10px] text-zinc-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live
+                </div>
               </div>
 
-              {/* Empty state (Linear style) */}
-              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-zinc-900 rounded bg-zinc-950/20">
-                <Cpu className="h-8 w-8 text-zinc-800 mb-3" />
-                <h4 className="text-xs font-semibold text-zinc-400">No agent nodes active</h4>
-                <p className="text-[10px] text-zinc-600 max-w-xs mt-1">Configure and initialize agent logic in Spring Boot backend in Sprint 3.</p>
+              {/* Chat messages viewport */}
+              <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 scrollable-list">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <Cpu className="h-8 w-8 text-zinc-800 mb-3" />
+                    <h4 className="text-xs font-semibold text-zinc-400">CeoAgent Node is Online</h4>
+                    <p className="text-[10px] text-zinc-600 max-w-xs mt-1">
+                      Send a message to begin orchestrating workflows. Try: "Draft an onboarding plan for a new engineer."
+                    </p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex flex-col max-w-[85%] rounded p-3 text-xs border ${
+                        msg.role === "user" 
+                          ? "ml-auto bg-zinc-900 border-zinc-850 text-white" 
+                          : "mr-auto bg-zinc-950/60 border-zinc-900 text-zinc-300"
+                      }`}
+                    >
+                      <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold mb-1">
+                        {msg.role === "user" ? "You" : "CEO Orchestrator"}
+                      </span>
+                      <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                      
+                      {msg.role === "agent" && msg.model && (
+                        <div className="mt-2.5 pt-2 border-t border-zinc-900 flex items-center gap-3 text-[9px] text-zinc-500 font-mono">
+                          <span>model: {msg.model}</span>
+                          <span>•</span>
+                          <span>latency: {msg.executionTime}ms</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+                <div ref={chatEndRef} />
               </div>
+
+              {/* Chat Input form */}
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder="Ask CEO Agent to plan, draft, or coordinate..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  className="flex-1 rounded border border-zinc-900 bg-zinc-950 py-2.5 px-4 text-xs text-white placeholder-zinc-700 outline-none hover:border-zinc-800 focus:border-zinc-600 transition-all"
+                />
+                <button
+                  type="submit"
+                  disabled={sending || !inputMessage.trim()}
+                  className="rounded bg-white px-4 py-2.5 hover:bg-zinc-200 text-black flex items-center justify-center transition-all disabled:opacity-40 disabled:hover:bg-white"
+                >
+                  {sending ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-black" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </button>
+              </form>
             </div>
 
             {/* Terminal Activity Feed */}
-            <div className="rounded border border-zinc-900 bg-zinc-950/40 p-6 flex flex-col h-[320px]">
+            <div className="rounded border border-zinc-900 bg-zinc-950/40 p-6 flex flex-col h-[500px]">
               <div className="flex items-center justify-between border-b border-zinc-900 pb-4 mb-4">
                 <div className="flex items-center gap-2">
                   <Terminal className="h-4 w-4 text-white" />
