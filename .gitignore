@@ -1,0 +1,50 @@
+# Maven build artifacts
+aegis-backend/target/
+aegis-backend/*.jar
+aegis-backend/*.war
+aegis-backend/*.zip
+aegis-backend/*.tar.gz
+
+# Node / Next.js build artifacts
+aegis-frontend/node_modules/
+aegis-frontend/.next/
+aegis-frontend/out/
+aegis-frontend/build/
+aegis-frontend/.pnp
+aegis-frontend/.pnp.js
+
+# Environment Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*.env.local
+
+# IDE and Editor Files
+.idea/
+*.iml
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Logs and databases
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.lerna/
+sqlite.db
