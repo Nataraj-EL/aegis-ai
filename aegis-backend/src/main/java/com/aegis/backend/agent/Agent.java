@@ -13,5 +13,5 @@ public interface Agent {
 
     List<String> getCapabilities();
 
-    AgentChatResponse process(AgentChatRequest request);
+    AgentChatResponse process(AgentChatRequest request, AgentContext context);
 }
