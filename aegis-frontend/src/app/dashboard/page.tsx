@@ -1,4 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { api } from "@/lib/api";
 import { 
   Activity, 
   BookOpen, 
@@ -13,10 +18,83 @@ import {
   Server, 
   Settings, 
   Terminal, 
-  User 
+  User,
+  LogOut,
+  ShieldCheck,
+  ShieldAlert,
+  Loader2
 } from "lucide-react";
 
 export default function Dashboard() {
+  const router = useRouter();
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [username, setUsername] = useState<string>("User");
+  const [apiStatus, setApiStatus] = useState<"connecting" | "success" | "error">("connecting");
+  const [apiMessage, setApiMessage] = useState<string>("Initializing verification...");
+  const [logs, setLogs] = useState<Array<string>>([]);
+
+  const addLog = (message: string) => {
+    const timestamp = new Date().toISOString().split('T')[1].substring(0, 8);
+    setLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("aegis_token");
+    const storedUsername = localStorage.getItem("aegis_username");
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+    
+    setAuthenticated(true);
+    addLog("Client authorization token detected.");
+
+    // Verify token against protected backend endpoint
+    const verifyToken = async () => {
+      try {
+        setApiStatus("connecting");
+        const response = await api.get("/v1/sample/protected");
+        if (response.data.success) {
+          setApiStatus("success");
+          setApiMessage(response.data.data);
+          addLog("INFO: JWT authorization verified with backend node.");
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error: any) {
+        console.error("Token verification failed:", error);
+        setApiStatus("error");
+        setApiMessage("Failed to authorize token against secure backend.");
+        addLog("ERROR: Secure handshaking failed. Redirecting...");
+        setTimeout(() => {
+          handleLogout();
+        }, 2000);
+      }
+    };
+
+    verifyToken();
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("aegis_token");
+    localStorage.removeItem("aegis_username");
+    router.push("/login");
+  };
+
+  if (authenticated === null) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-zinc-500 font-mono text-xs gap-3">
+        <Loader2 className="h-4 w-4 animate-spin text-white" />
+        Authenticating session...
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-black font-sans text-zinc-300">
       
@@ -55,8 +133,10 @@ export default function Dashboard() {
         {/* Footer info */}
         <div className="border-t border-zinc-900 p-4">
           <div className="flex items-center gap-2 px-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">Backend Offline</span>
+            <div className={`h-2 w-2 rounded-full ${apiStatus === "success" ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+              {apiStatus === "success" ? "Backend Secure" : "Connecting..."}
+            </span>
           </div>
         </div>
       </aside>
@@ -75,11 +155,20 @@ export default function Dashboard() {
               Landing Page <ExternalLink className="h-3 w-3" />
             </Link>
             <div className="h-4 w-px bg-zinc-800" />
-            <div className="flex items-center gap-2 text-xs text-zinc-300">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800">
-                <User className="h-3.5 w-3.5 text-zinc-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-xs text-zinc-300">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800">
+                  <User className="h-3.5 w-3.5 text-zinc-400" />
+                </div>
+                <span className="hidden sm:inline font-medium">{username}</span>
               </div>
-              <span className="hidden sm:inline font-medium">Demo User</span>
+              <button 
+                onClick={handleLogout}
+                title="Log Out"
+                className="p-1 rounded hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition-all"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </header>
@@ -89,7 +178,7 @@ export default function Dashboard() {
           {/* Header Title */}
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white font-sans">Business Operating System Overview</h1>
-            <p className="text-xs text-zinc-500 mt-1">Real-time telemetry and status of your local agent execution nodes.</p>
+            <p className="text-xs text-zinc-500 mt-1">Real-time telemetry and status of your secure agent execution nodes.</p>
           </div>
 
           {/* Grid Stat Cards */}
@@ -116,11 +205,37 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="rounded border border-zinc-900 bg-zinc-950/40 p-5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">System Telemetry</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Security Access</span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-bold text-emerald-500 font-mono">OK</span>
-                <span className="text-[10px] text-zinc-500">v3.5.x foundation</span>
+                {apiStatus === "success" ? (
+                  <span className="text-2xl font-bold text-emerald-500 font-mono flex items-center gap-1.5">
+                    SECURE <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                  </span>
+                ) : apiStatus === "connecting" ? (
+                  <span className="text-xl font-bold text-zinc-500 font-mono">VERIFYING...</span>
+                ) : (
+                  <span className="text-2xl font-bold text-red-500 font-mono flex items-center gap-1.5">
+                    ERROR <ShieldAlert className="h-5 w-5 text-red-500" />
+                  </span>
+                )}
               </div>
+            </div>
+          </div>
+
+          {/* Secure Handshake Banner */}
+          <div className={`p-4 rounded border flex items-center gap-3 ${
+            apiStatus === "success" 
+              ? "bg-emerald-950/10 border-emerald-900/40 text-emerald-400" 
+              : apiStatus === "connecting" 
+              ? "bg-zinc-950 border-zinc-900 text-zinc-400" 
+              : "bg-red-950/10 border-red-900/40 text-red-400"
+          }`}>
+            {apiStatus === "connecting" && <Loader2 className="h-4 w-4 animate-spin" />}
+            {apiStatus === "success" && <ShieldCheck className="h-5 w-5" />}
+            {apiStatus === "error" && <ShieldAlert className="h-5 w-5" />}
+            <div className="text-xs">
+              <span className="font-semibold uppercase tracking-wider text-[10px] block mb-0.5">Secure Gateway Status</span>
+              {apiMessage}
             </div>
           </div>
 
@@ -162,10 +277,11 @@ export default function Dashboard() {
 
               {/* Log messages */}
               <div className="flex-1 overflow-y-auto font-mono text-[10px] text-zinc-500 space-y-2.5 scrollable-list">
-                <p className="text-zinc-600">[{new Date().toISOString().split('T')[0]} 12:00:01] <span className="text-emerald-500">INFO</span> Aegis OS Web Console initialized.</p>
-                <p className="text-zinc-600">[{new Date().toISOString().split('T')[0]} 12:00:02] <span className="text-zinc-400">WARN</span> API Client disconnected: Backend offline or loading.</p>
-                <p className="text-zinc-600">[{new Date().toISOString().split('T')[0]} 12:00:03] <span className="text-zinc-500">INFO</span> Scaffolding loaded. Awaiting Sprint 2 authentication setup.</p>
-                <p className="text-zinc-600">[{new Date().toISOString().split('T')[0]} 12:00:05] <span className="text-emerald-500">INFO</span> Layout stability configured (scrollbar-gutter stable).</p>
+                <p className="text-zinc-600">[INFO] Aegis Web Console initialized.</p>
+                {logs.map((log, index) => (
+                  <p key={index} className="text-zinc-400">{log}</p>
+                ))}
+                <p className="text-zinc-600">[INFO] Layout stability configured (scrollbar-gutter stable).</p>
               </div>
             </div>
 

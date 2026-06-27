@@ -34,6 +34,20 @@
         <exclude name="ShortVariable"/>
         <!-- Spotless handles block formatting; no need for PMD to enforce braces checks -->
         <exclude name="ControlStatementBraces"/>
+        <!-- Spring standard injection uses long variable names like userDetailsService -->
+        <exclude name="LongVariable"/>
+        <!-- User is a standard JPA entity name -->
+        <exclude name="ShortClassName"/>
+        <!-- Guard clauses (early returns) are preferred over deep nesting -->
+        <exclude name="OnlyOneReturn"/>
+        <!-- Empty or generated constructors are fine -->
+        <exclude name="UnnecessaryConstructor"/>
+        <!-- Variable declarations can be grouped or positioned for developer clarity -->
+        <exclude name="PrematureDeclaration"/>
+        <!-- Lambdas can be written inline even if simple method reference is possible -->
+        <exclude name="LambdaCanBeMethodReference"/>
+        <!-- Framework injection constructors do not need super() call -->
+        <exclude name="CallSuperInConstructor"/>
     </rule>
 
 </ruleset>

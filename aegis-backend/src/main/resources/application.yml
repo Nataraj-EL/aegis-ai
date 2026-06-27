@@ -37,3 +37,10 @@ spring:
         chat:
           options:
             model: gemini-1.5-flash
+
+aegis:
+  security:
+    jwt:
+      secret: ${AEGIS_JWT_SECRET}
+      expiration-ms: ${AEGIS_JWT_EXPIRATION_MS:86400000} # default 24 hours
+
