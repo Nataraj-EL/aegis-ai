@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<ruleset name="Aegis Custom Ruleset"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Custom PMD ruleset for Aegis AI to filter out rules that conflict with modern coding practices or Spotless formatting.
+    </description>
+
+    <!-- Error Prone Category Exclusions -->
+    <rule ref="category/java/errorprone.xml">
+        <!-- We use JSON serialization and do not require serialVersionUID -->
+        <exclude name="MissingSerialVersionUID"/>
+        <!-- ApiResponse has fields 'success' and 'error' matching builder method names -->
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
+    </rule>
+
+    <!-- Best Practices Category Exclusions -->
+    <rule ref="category/java/bestpractices.xml">
+        <!-- We do not need logging guards for modern SLF4J templates -->
+        <exclude name="GuardLogStatement"/>
+    </rule>
+
+    <!-- Code Style Category Exclusions -->
+    <rule ref="category/java/codestyle.xml">
+        <!-- Spotless + modern compilers do not require final parameters -->
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <!-- We do not need final on all local variables -->
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <!-- Lombok handles constructor generation; no need to manually declare on every class -->
+        <exclude name="AtLeastOneConstructor"/>
+        <!-- Short variable names like 'id', 'ex' are standard and readable -->
+        <exclude name="ShortVariable"/>
+        <!-- Spotless handles block formatting; no need for PMD to enforce braces checks -->
+        <exclude name="ControlStatementBraces"/>
+    </rule>
+
+</ruleset>
