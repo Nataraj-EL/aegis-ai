@@ -4,10 +4,11 @@ import com.aegis.backend.ai.AiService;
 import com.aegis.backend.ai.PromptManager;
 import com.aegis.backend.dto.AgentChatRequest;
 import com.aegis.backend.dto.AgentChatResponse;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CeoAgent implements OrchestratorAgent {
+public class CeoAgent implements Agent {
 
     private final AiService aiService;
     private final PromptManager promptManager;
@@ -15,6 +16,27 @@ public class CeoAgent implements OrchestratorAgent {
     public CeoAgent(final AiService aiService, final PromptManager promptManager) {
         this.aiService = aiService;
         this.promptManager = promptManager;
+    }
+
+    @Override
+    public String getId() {
+        return "ceo";
+    }
+
+    @Override
+    public String getName() {
+        return "CEO Orchestrator";
+    }
+
+    @Override
+    public String getDescription() {
+        return "The master mind agent designed to coordinate, analyze, and draft structured operational strategies.";
+    }
+
+    @Override
+    public List<String> getCapabilities() {
+        return List.of(
+                "workflow planning", "task delegation", "document drafting", "general operational query handling");
     }
 
     @Override

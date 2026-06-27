@@ -14,6 +14,10 @@
         <exclude name="MissingSerialVersionUID"/>
         <!-- ApiResponse has fields 'success' and 'error' matching builder method names -->
         <exclude name="AvoidFieldNameMatchingMethodName"/>
+        <!-- System defaults are fine for simple string casing -->
+        <exclude name="UseLocaleWithCaseConversions"/>
+        <!-- Numeric literals like 0 and 1 are common in business guard conditions -->
+        <exclude name="AvoidLiteralsInIfCondition"/>
     </rule>
 
     <!-- Best Practices Category Exclusions -->
