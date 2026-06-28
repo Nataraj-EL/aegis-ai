@@ -76,25 +76,14 @@ public class ExecutiveInsightsAgent implements Agent {
                 metrics.getOrDefault("documentsCount", 0L),
                 metrics.getOrDefault("documentChunksCount", 0L));
 
-        final String historyText = context.getFormattedHistory();
-        final String contextText = context.getFormattedRetrievedContext();
-
-        final StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(metricsStr).append("\n");
-        if (!contextText.isEmpty()) {
-            queryBuilder.append(contextText);
-        }
-        if (!historyText.isEmpty()) {
-            queryBuilder.append("Conversation History:\n").append(historyText).append("\n");
-        }
-        queryBuilder.append("Current User Request:\n[USER]: ").append(request.getMessage());
+        final String finalQuery = context.buildQuery(metricsStr, request.getMessage());
 
         final String systemPrompt = promptManager.loadSystemPrompt("executive_insights_agent.txt");
         final long startTime = System.currentTimeMillis();
 
         AgentChatResponse chatResponse;
         try {
-            final String rawResponse = aiService.generateResponse(systemPrompt, queryBuilder.toString());
+            final String rawResponse = aiService.generateResponse(systemPrompt, finalQuery);
             final ExecutiveInsightsReport report = insightsParser.parse(rawResponse);
             final long duration = System.currentTimeMillis() - startTime;
 

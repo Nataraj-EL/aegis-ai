@@ -77,6 +77,26 @@ public class AgentContext {
         return contextText.toString();
     }
 
+    public String buildQuery(final String metricsContext, final String userMessage) {
+        final StringBuilder queryBuilder = new StringBuilder();
+        if (metricsContext != null && !metricsContext.isEmpty()) {
+            queryBuilder.append(metricsContext).append("\n");
+        }
+
+        final String contextText = getFormattedRetrievedContext();
+        if (!contextText.isEmpty()) {
+            queryBuilder.append(contextText);
+        }
+
+        final String historyText = getFormattedHistory();
+        if (!historyText.isEmpty()) {
+            queryBuilder.append("Conversation History:\n").append(historyText).append("\n");
+        }
+
+        queryBuilder.append("Current User Request:\n[USER]: ").append(userMessage);
+        return queryBuilder.toString();
+    }
+
     public static class Builder {
         private final String sessionId;
         private final String username;

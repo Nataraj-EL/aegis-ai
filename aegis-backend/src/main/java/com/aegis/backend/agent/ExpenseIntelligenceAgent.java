@@ -104,25 +104,14 @@ public class ExpenseIntelligenceAgent implements Agent {
                         + "Expense Ledger Entries:\n%s\n",
                 totalAmount, categoryTotals, statusTotals, formattedRaw);
 
-        final String historyText = context.getFormattedHistory();
-        final String contextText = context.getFormattedRetrievedContext();
-
-        final StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(metricsContext).append("\n");
-        if (!contextText.isEmpty()) {
-            queryBuilder.append(contextText);
-        }
-        if (!historyText.isEmpty()) {
-            queryBuilder.append("Conversation History:\n").append(historyText).append("\n");
-        }
-        queryBuilder.append("Current User Request:\n[USER]: ").append(request.getMessage());
+        final String finalQuery = context.buildQuery(metricsContext, request.getMessage());
 
         final String systemPrompt = promptManager.loadSystemPrompt("expense_intelligence_agent.txt");
         final long startTime = System.currentTimeMillis();
 
         AgentChatResponse response;
         try {
-            final String rawResponse = aiService.generateResponse(systemPrompt, queryBuilder.toString());
+            final String rawResponse = aiService.generateResponse(systemPrompt, finalQuery);
             final ExpenseIntelligenceReport report = parser.parse(rawResponse);
             final long duration = System.currentTimeMillis() - startTime;
 
