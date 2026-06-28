@@ -17,4 +17,5 @@ public class AgentChatResponse {
     private List<String> suggestedActions;
     private Long executionTime;
     private String model;
+    private String requestId;
 }

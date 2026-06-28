@@ -14,6 +14,8 @@
         <exclude name="MissingSerialVersionUID"/>
         <!-- ApiResponse has fields 'success' and 'error' matching builder method names -->
         <exclude name="AvoidFieldNameMatchingMethodName"/>
+        <!-- Spring AOP ProceedingJoinPoint proceed() throws Throwable which must be caught/propagated -->
+        <exclude name="AvoidCatchingThrowable"/>
         <!-- System defaults are fine for simple string casing -->
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- Numeric literals like 0 and 1 are common in business guard conditions -->

@@ -2,6 +2,7 @@ package com.aegis.backend.agent;
 
 import com.aegis.backend.memory.MemoryManager;
 import java.util.List;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,6 +18,10 @@ public class AgentContextFactory {
 
     public AgentContext createContext(final String sessionId, final String username, final String message) {
         final AgentContext.Builder builder = new AgentContext.Builder(sessionId, username);
+
+        // Propagate requestId from MDC
+        final String requestId = MDC.get("requestId");
+        builder.requestId(requestId);
 
         for (final ContextProvider provider : contextProviders) {
             provider.populateContext(builder, sessionId, username, message);

@@ -9,6 +9,7 @@ public class AgentContext {
 
     private final String sessionId;
     private final String username;
+    private final String requestId;
     private final List<ChatMessageDto> conversationHistory;
     private final List<String> retrievedContext;
     private final BiConsumer<String, String> saveMessageCallback;
@@ -16,6 +17,7 @@ public class AgentContext {
     private AgentContext(final Builder builder) {
         this.sessionId = builder.sessionId;
         this.username = builder.username;
+        this.requestId = builder.requestId;
         this.conversationHistory = builder.conversationHistory;
         this.retrievedContext = builder.retrievedContext;
         this.saveMessageCallback = builder.saveMessageCallback;
@@ -27,6 +29,10 @@ public class AgentContext {
 
     public String getUsername() {
         return username;
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
     public List<ChatMessageDto> getConversationHistory() {
@@ -46,6 +52,7 @@ public class AgentContext {
     public static class Builder {
         private final String sessionId;
         private final String username;
+        private String requestId;
         private List<ChatMessageDto> conversationHistory = new ArrayList<>();
         private List<String> retrievedContext = new ArrayList<>();
         private BiConsumer<String, String> saveMessageCallback;
@@ -53,6 +60,11 @@ public class AgentContext {
         public Builder(final String sessionId, final String username) {
             this.sessionId = sessionId;
             this.username = username;
+        }
+
+        public Builder requestId(final String requestId) {
+            this.requestId = requestId;
+            return this;
         }
 
         public Builder conversationHistory(final List<ChatMessageDto> conversationHistory) {

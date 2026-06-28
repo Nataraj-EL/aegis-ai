@@ -7,7 +7,7 @@
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %magenta([%thread]) %highlight(%-5level) %logger{36} - %msg%n
+                %d{yyyy-MM-dd HH:mm:ss} %magenta([%thread]) %highlight(%-5level) %logger{36} - [reqId=%X{requestId}] - %msg%n
             </Pattern>
         </layout>
     </appender>
@@ -16,7 +16,7 @@
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOGS}/aegis-api.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - [reqId=%X{requestId}] - %msg%n</Pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">

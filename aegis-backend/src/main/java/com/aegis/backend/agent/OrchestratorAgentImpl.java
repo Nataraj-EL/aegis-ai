@@ -44,8 +44,11 @@ public class OrchestratorAgentImpl implements OrchestratorAgent {
         final AgentChatResponse response = routedAgent.process(request, context);
 
         // Save final agent response to memory via AgentContext delegate
-        if (response != null && response.getResponse() != null) {
-            context.saveMessage("agent", response.getResponse());
+        if (response != null) {
+            if (response.getResponse() != null) {
+                context.saveMessage("agent", response.getResponse());
+            }
+            response.setRequestId(context.getRequestId());
         }
 
         return response;
