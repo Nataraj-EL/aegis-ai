@@ -22,4 +22,6 @@ public class ProcurementResponse {
     private ProcurementStatus status;
     private String username;
     private LocalDateTime createdAt;
+    private UUID vendorId;
+    private String vendorName;
 }

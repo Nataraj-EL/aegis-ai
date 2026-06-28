@@ -7,8 +7,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,35 +19,31 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "procurement_requests")
+@Table(name = "vendors")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProcurementRequest {
+public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "item_name", nullable = false)
-    private String itemName;
+    @Column(nullable = false, unique = true)
+    private String name;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @Column(name = "contact_email")
+    private String contactEmail;
 
-    @Column(name = "estimated_cost", nullable = false, precision = 12, scale = 2)
-    private BigDecimal estimatedCost;
-
-    @Column(length = 255)
-    private String justification;
+    private String category;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ProcurementStatus status;
+    private VendorStatus status;
 
-    @Column(nullable = false, length = 50)
-    private String username;
+    @Column(precision = 3, scale = 2)
+    private BigDecimal rating;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -58,8 +52,4 @@ public class ProcurementRequest {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "vendor_id")
-    private Vendor vendor;
 }
