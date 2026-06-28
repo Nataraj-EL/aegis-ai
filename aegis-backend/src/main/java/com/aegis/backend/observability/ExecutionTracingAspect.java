@@ -9,10 +9,12 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.MDC;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
+@Order(1)
 @Aspect
 @Component
 public class ExecutionTracingAspect {
@@ -53,7 +55,12 @@ public class ExecutionTracingAspect {
             log.error("Tracing Agent execution failure: '{}' (Duration: {} ms)", agentId, duration, exception);
 
             auditEventPublisher.publishEvent(
-                    requestId, username, "agent_execution:" + agentId, "FAILURE", duration, exception.getMessage());
+                    requestId,
+                    username,
+                    "agent_execution:" + agentId,
+                    "FAILURE",
+                    duration,
+                    truncateMessage(exception.getMessage()));
 
             throw exception;
         }
@@ -76,6 +83,7 @@ public class ExecutionTracingAspect {
             final long duration = System.currentTimeMillis() - startTime;
             log.info("Tracing Tool execution end: '{}' successfully (Duration: {} ms)", toolId, duration);
 
+            // Log key set only (never log parameter values which could contain sensitive passwords, tokens)
             auditEventPublisher.publishEvent(
                     requestId,
                     username,
@@ -90,9 +98,22 @@ public class ExecutionTracingAspect {
             log.error("Tracing Tool execution failure: '{}' (Duration: {} ms)", toolId, duration, exception);
 
             auditEventPublisher.publishEvent(
-                    requestId, username, "tool_execution:" + toolId, "FAILURE", duration, exception.getMessage());
+                    requestId,
+                    username,
+                    "tool_execution:" + toolId,
+                    "FAILURE",
+                    duration,
+                    truncateMessage(exception.getMessage()));
 
             throw exception;
         }
+    }
+
+    private String truncateMessage(final String message) {
+        if (message == null) {
+            return null;
+        }
+        final int maxLength = 255;
+        return message.length() > maxLength ? message.substring(0, maxLength) + "..." : message;
     }
 }
