@@ -49,6 +49,34 @@ public class AgentContext {
         }
     }
 
+    public String getFormattedHistory() {
+        final StringBuilder historyText = new StringBuilder();
+        if (conversationHistory != null && conversationHistory.size() > 1) {
+            for (int i = 0; i < conversationHistory.size() - 1; i++) {
+                final ChatMessageDto msg = conversationHistory.get(i);
+                historyText
+                        .append("[")
+                        .append(msg.getRole().toUpperCase())
+                        .append("]: ")
+                        .append(msg.getContent())
+                        .append("\n");
+            }
+        }
+        return historyText.toString();
+    }
+
+    public String getFormattedRetrievedContext() {
+        final StringBuilder contextText = new StringBuilder();
+        if (retrievedContext != null && !retrievedContext.isEmpty()) {
+            contextText.append("Retrieved Reference Documents:\n");
+            for (final String chunk : retrievedContext) {
+                contextText.append("- ").append(chunk).append("\n");
+            }
+            contextText.append("\n");
+        }
+        return contextText.toString();
+    }
+
     public static class Builder {
         private final String sessionId;
         private final String username;
