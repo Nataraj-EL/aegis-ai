@@ -1,21 +1,21 @@
 package com.aegis.backend.util;
 
-import com.aegis.backend.dto.ExecutiveInsightsReport;
+import com.aegis.backend.dto.ExpenseIntelligenceReport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ExecutiveInsightsParser {
+public class ExpenseIntelligenceParser {
 
     private final ObjectMapper objectMapper;
 
-    public ExecutiveInsightsParser(final ObjectMapper objectMapper) {
+    public ExpenseIntelligenceParser(final ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public ExecutiveInsightsReport parse(final String rawText) {
+    public ExpenseIntelligenceReport parse(final String rawText) {
         if (rawText == null || rawText.trim().isEmpty()) {
             throw new IllegalArgumentException("Raw text to parse cannot be empty");
         }
@@ -23,10 +23,10 @@ public class ExecutiveInsightsParser {
         final String cleaned = JsonCleaner.cleanMarkdownWrapper(rawText);
 
         try {
-            return objectMapper.readValue(cleaned, ExecutiveInsightsReport.class);
+            return objectMapper.readValue(cleaned, ExpenseIntelligenceReport.class);
         } catch (final Exception exception) {
             log.error(
-                    "Failed to parse raw text as ExecutiveInsightsReport: {}",
+                    "Failed to parse raw text as ExpenseIntelligenceReport: {}",
                     cleaned.substring(0, Math.min(cleaned.length(), 100)),
                     exception);
             throw new IllegalArgumentException("Failed to parse JSON content: " + exception.getMessage(), exception);
