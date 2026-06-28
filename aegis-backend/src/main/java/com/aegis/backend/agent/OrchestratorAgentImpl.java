@@ -2,7 +2,6 @@ package com.aegis.backend.agent;
 
 import com.aegis.backend.dto.AgentChatRequest;
 import com.aegis.backend.dto.AgentChatResponse;
-import com.aegis.backend.memory.MemoryManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,11 +11,11 @@ import org.springframework.stereotype.Service;
 public class OrchestratorAgentImpl implements OrchestratorAgent {
 
     private final AgentRouter agentRouter;
-    private final MemoryManager memoryManager;
+    private final AgentContextFactory agentContextFactory;
 
-    public OrchestratorAgentImpl(final AgentRouter agentRouter, final MemoryManager memoryManager) {
+    public OrchestratorAgentImpl(final AgentRouter agentRouter, final AgentContextFactory agentContextFactory) {
         this.agentRouter = agentRouter;
-        this.memoryManager = memoryManager;
+        this.agentContextFactory = agentContextFactory;
     }
 
     @Override
@@ -25,9 +24,10 @@ public class OrchestratorAgentImpl implements OrchestratorAgent {
                 SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("Orchestrator creating context for session/user: {}", username);
 
-        final AgentContext context = new AgentContext(username, username, memoryManager);
+        // Build the execution context using the Factory
+        final AgentContext context = agentContextFactory.createContext(username, username, request.getMessage());
 
-        // Save incoming user message
+        // Save incoming user message to memory via AgentContext delegate
         context.saveMessage("user", request.getMessage());
 
         log.info("Orchestrator routing request message: {}", request.getMessage());
@@ -43,7 +43,7 @@ public class OrchestratorAgentImpl implements OrchestratorAgent {
         log.info("Delegating execution process to Agent: {}", routedAgent.getName());
         final AgentChatResponse response = routedAgent.process(request, context);
 
-        // Save final agent response
+        // Save final agent response to memory via AgentContext delegate
         if (response != null && response.getResponse() != null) {
             context.saveMessage("agent", response.getResponse());
         }

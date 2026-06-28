@@ -24,6 +24,8 @@
     <rule ref="category/java/bestpractices.xml">
         <!-- We do not need logging guards for modern SLF4J templates -->
         <exclude name="GuardLogStatement"/>
+        <!-- Arrays are often preferred over varargs for performance and specific signatures -->
+        <exclude name="UseVarargs"/>
     </rule>
 
     <!-- Code Style Category Exclusions -->

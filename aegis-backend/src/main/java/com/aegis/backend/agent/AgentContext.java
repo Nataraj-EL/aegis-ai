@@ -1,19 +1,24 @@
 package com.aegis.backend.agent;
 
 import com.aegis.backend.dto.ChatMessageDto;
-import com.aegis.backend.memory.MemoryManager;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class AgentContext {
 
     private final String sessionId;
     private final String username;
-    private final MemoryManager memoryManager;
+    private final List<ChatMessageDto> conversationHistory;
+    private final List<String> retrievedContext;
+    private final BiConsumer<String, String> saveMessageCallback;
 
-    public AgentContext(final String sessionId, final String username, final MemoryManager memoryManager) {
-        this.sessionId = sessionId;
-        this.username = username;
-        this.memoryManager = memoryManager;
+    private AgentContext(final Builder builder) {
+        this.sessionId = builder.sessionId;
+        this.username = builder.username;
+        this.conversationHistory = builder.conversationHistory;
+        this.retrievedContext = builder.retrievedContext;
+        this.saveMessageCallback = builder.saveMessageCallback;
     }
 
     public String getSessionId() {
@@ -25,10 +30,48 @@ public class AgentContext {
     }
 
     public List<ChatMessageDto> getConversationHistory() {
-        return memoryManager.getConversationHistory(sessionId);
+        return conversationHistory;
+    }
+
+    public List<String> getRetrievedContext() {
+        return retrievedContext;
     }
 
     public void saveMessage(final String role, final String content) {
-        memoryManager.saveMessage(sessionId, role, content);
+        if (saveMessageCallback != null) {
+            saveMessageCallback.accept(role, content);
+        }
+    }
+
+    public static class Builder {
+        private final String sessionId;
+        private final String username;
+        private List<ChatMessageDto> conversationHistory = new ArrayList<>();
+        private List<String> retrievedContext = new ArrayList<>();
+        private BiConsumer<String, String> saveMessageCallback;
+
+        public Builder(final String sessionId, final String username) {
+            this.sessionId = sessionId;
+            this.username = username;
+        }
+
+        public Builder conversationHistory(final List<ChatMessageDto> conversationHistory) {
+            this.conversationHistory = conversationHistory;
+            return this;
+        }
+
+        public Builder retrievedContext(final List<String> retrievedContext) {
+            this.retrievedContext = retrievedContext;
+            return this;
+        }
+
+        public Builder saveMessageCallback(final BiConsumer<String, String> saveMessageCallback) {
+            this.saveMessageCallback = saveMessageCallback;
+            return this;
+        }
+
+        public AgentContext build() {
+            return new AgentContext(this);
+        }
     }
 }

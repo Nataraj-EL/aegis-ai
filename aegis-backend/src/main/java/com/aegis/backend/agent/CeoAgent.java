@@ -60,16 +60,29 @@ public class CeoAgent implements Agent {
             }
         }
 
-        final String userMessageWithHistory;
-        if (historyText.length() > 0) {
-            userMessageWithHistory = "Conversation History:\n" + historyText.toString() + "\n"
-                    + "Current User Request:\n[USER]: " + request.getMessage();
-        } else {
-            userMessageWithHistory = request.getMessage();
+        final List<String> retrievedContext = context.getRetrievedContext();
+        final StringBuilder contextText = new StringBuilder();
+        if (retrievedContext != null && !retrievedContext.isEmpty()) {
+            contextText.append("Retrieved Reference Documents:\n");
+            for (final String chunk : retrievedContext) {
+                contextText.append("- ").append(chunk).append("\n");
+            }
+            contextText.append("\n");
         }
 
+        final StringBuilder queryBuilder = new StringBuilder();
+        if (contextText.length() > 0) {
+            queryBuilder.append(contextText);
+        }
+        if (historyText.length() > 0) {
+            queryBuilder.append("Conversation History:\n").append(historyText).append("\n");
+        }
+        queryBuilder.append("Current User Request:\n[USER]: ").append(request.getMessage());
+
+        final String finalQuery = queryBuilder.toString();
+
         final long startTime = System.currentTimeMillis();
-        final String responseText = aiService.generateResponse(systemPrompt, userMessageWithHistory);
+        final String responseText = aiService.generateResponse(systemPrompt, finalQuery);
         final long duration = System.currentTimeMillis() - startTime;
 
         return AgentChatResponse.builder()
