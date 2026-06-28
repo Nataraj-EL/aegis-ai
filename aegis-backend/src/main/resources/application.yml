@@ -12,6 +12,8 @@ management:
       show-details: always
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: aegis-backend
 
@@ -36,11 +38,15 @@ spring:
 
   ai:
     google:
-      gemini:
+      genai:
         api-key: ${SPRING_AI_GEMINI_API_KEY}
         chat:
           options:
             model: gemini-1.5-flash
+        embedding:
+          api-key: ${SPRING_AI_GEMINI_API_KEY}
+          options:
+            model: text-embedding-004
 
 aegis:
   security:
