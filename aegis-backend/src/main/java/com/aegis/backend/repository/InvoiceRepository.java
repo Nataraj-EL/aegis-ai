@@ -1,6 +1,7 @@
 package com.aegis.backend.repository;
 
 import com.aegis.backend.dto.InvoiceMetricsProjection;
+import com.aegis.backend.dto.InvoiceSummaryProjection;
 import com.aegis.backend.entity.Invoice;
 import com.aegis.backend.entity.InvoiceStatus;
 import java.time.LocalDateTime;
@@ -22,4 +23,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
     @Query(
             "SELECT i.status AS status, COUNT(i) AS count, SUM(i.amount) AS totalAmount FROM Invoice i GROUP BY i.status")
     List<InvoiceMetricsProjection> getInvoiceMetricsSummary();
+
+    @Query("SELECT COUNT(i) AS count, "
+            + "COALESCE(SUM(i.amount), 0) AS totalAmount, "
+            + "COALESCE(SUM(CASE WHEN i.status = 'PAID' THEN i.amount ELSE 0 END), 0) AS paidAmount, "
+            + "COALESCE(SUM(CASE WHEN i.status IN ('PENDING', 'OVERDUE') THEN i.amount ELSE 0 END), 0) AS outstandingAmount "
+            + "FROM Invoice i")
+    InvoiceSummaryProjection getInvoiceSummary();
 }
