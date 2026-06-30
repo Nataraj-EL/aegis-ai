@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Invoice Controller", description = "REST endpoints for managing client invoices")
 @RestController
 @RequestMapping("/api/v1/invoices")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class InvoiceController {
 
     private static final String CODE_200 = "200";
@@ -48,6 +50,7 @@ public class InvoiceController {
                 description = "Invalid input, deal mismatch, or invoice number collision")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<InvoiceResponse>> createInvoice(
             @Valid @RequestBody final InvoiceCreateRequest request) {
         final InvoiceResponse response = invoiceService.createInvoice(request);
@@ -102,6 +105,7 @@ public class InvoiceController {
                 description = "Invalid status transition or target invoice finalized")
     })
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<InvoiceResponse>> updateInvoiceStatus(
             @PathVariable final UUID id, @RequestParam final InvoiceStatus status) {
         final InvoiceResponse response = invoiceService.updateInvoiceStatus(id, status);
@@ -118,6 +122,7 @@ public class InvoiceController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Invoice not found")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable final UUID id) {
         invoiceService.deleteInvoice(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Invoice cancelled successfully"));

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
         description = "REST endpoints for operational KPIs summary and saved trend snapshots")
 @RestController
 @RequestMapping("/api/v1/dashboard")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class DashboardController {
 
     private static final String CODE_200 = "200";
@@ -64,6 +66,7 @@ public class DashboardController {
                 description = "Invalid request details")
     })
     @PostMapping("/snapshots")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<DashboardSnapshotResponse>> createSnapshot(
             @Valid @RequestBody final DashboardSnapshotCreateRequest request) {
         final DashboardSnapshotResponse response = dashboardService.createSnapshot(request);
@@ -118,6 +121,7 @@ public class DashboardController {
                 description = "Dashboard snapshot not found")
     })
     @DeleteMapping("/snapshots/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteSnapshot(@PathVariable final UUID id) {
         dashboardService.deleteSnapshot(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Dashboard snapshot deleted successfully"));

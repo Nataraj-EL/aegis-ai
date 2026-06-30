@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Expense Controller", description = "REST endpoints to log and filter business expense entries")
 @RestController
 @RequestMapping("/api/v1/expenses")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class ExpenseController {
 
     private final ExpenseService expenseService;

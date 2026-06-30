@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Deal Controller", description = "REST endpoints for managing corporate sales deals")
 @RestController
 @RequestMapping("/api/v1/deals")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class DealController {
 
     private static final String CODE_200 = "200";
@@ -46,6 +48,7 @@ public class DealController {
                 description = "Invalid input or customer not found")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<DealResponse>> createDeal(@Valid @RequestBody final DealCreateRequest request) {
         final String username =
                 SecurityContextHolder.getContext().getAuthentication().getName();
@@ -97,6 +100,7 @@ public class DealController {
                 description = "Invalid stage transition or deal finalized")
     })
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<DealResponse>> updateDealStatus(
             @PathVariable final UUID id, @RequestParam final DealStatus status) {
         final DealResponse response = dealService.updateDealStatus(id, status);

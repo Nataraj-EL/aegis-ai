@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Inventory Controller", description = "REST endpoints for managing warehouse inventory items")
 @RestController
 @RequestMapping("/api/v1/inventory")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class InventoryItemController {
 
     private static final String CODE_200 = "200";
@@ -46,6 +48,7 @@ public class InventoryItemController {
                 description = "SKU collision or validation failure")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<InventoryResponse>> createInventoryItem(
             @Valid @RequestBody final InventoryCreateRequest request) {
         final InventoryResponse response = inventoryItemService.createInventoryItem(request);
@@ -97,6 +100,7 @@ public class InventoryItemController {
                 description = "Adjustment causes negative stock or target item not found")
     })
     @PutMapping("/{id}/quantity")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<InventoryResponse>> updateQuantity(
             @PathVariable final UUID id, @RequestParam final Integer change) {
         final InventoryResponse response = inventoryItemService.updateQuantity(id, change);

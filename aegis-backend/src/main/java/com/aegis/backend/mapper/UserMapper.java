@@ -12,7 +12,8 @@ public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "accessToken", source = "token")
+    @Mapping(target = "accessToken", source = "accessToken")
+    @Mapping(target = "refreshToken", source = "refreshToken")
     @Mapping(target = "role", expression = "java(user.getRole().name())")
-    AuthResponse toAuthResponse(User user, String token);
+    AuthResponse toAuthResponse(User user, String accessToken, String refreshToken);
 }

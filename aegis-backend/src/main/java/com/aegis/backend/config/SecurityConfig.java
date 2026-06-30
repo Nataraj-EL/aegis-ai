@@ -1,5 +1,7 @@
 package com.aegis.backend.config;
 
+import com.aegis.backend.security.CustomAccessDeniedHandler;
+import com.aegis.backend.security.CustomAuthenticationEntryPoint;
 import com.aegis.backend.security.CustomUserDetailsService;
 import com.aegis.backend.security.JwtFilter;
 import java.util.List;
@@ -9,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,14 +25,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(final JwtFilter jwtFilter, final CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(
+            final JwtFilter jwtFilter,
+            final CustomUserDetailsService userDetailsService,
+            final CustomAuthenticationEntryPoint authenticationEntryPoint,
+            final CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -37,7 +49,14 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**")
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/me")
+                        .authenticated()
+                        .requestMatchers("/api/v1/auth/admin/register")
+                        .authenticated()
+                        .requestMatchers("/api/v1/auth/**")
                         .permitAll()
                         .requestMatchers("/actuator/**")
                         .permitAll()

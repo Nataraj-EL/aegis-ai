@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Vendor Controller", description = "REST endpoints for managing corporate vendor profiles")
 @RestController
 @RequestMapping("/api/v1/vendors")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class VendorController {
 
     private static final String CODE_200 = "200";
@@ -46,6 +48,7 @@ public class VendorController {
                 description = "Invalid input or name collision")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<VendorResponse>> createVendor(
             @Valid @RequestBody final VendorCreateRequest request) {
         final VendorResponse response = vendorService.createVendor(request);
@@ -90,6 +93,7 @@ public class VendorController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vendor not found")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<VendorResponse>> updateVendor(
             @PathVariable final UUID id, @Valid @RequestBody final VendorCreateRequest request) {
         final VendorResponse response = vendorService.updateVendor(id, request);
@@ -109,6 +113,7 @@ public class VendorController {
                 description = "Vendor is referenced by existing procurement requests")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteVendor(@PathVariable final UUID id) {
         vendorService.deleteVendor(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Vendor profile soft-deleted successfully"));

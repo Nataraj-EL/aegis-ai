@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Ticket Controller", description = "REST endpoints for managing helpdesk support tickets")
 @RestController
 @RequestMapping("/api/v1/tickets")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class TicketController {
 
     private static final String CODE_200 = "200";
@@ -106,6 +108,7 @@ public class TicketController {
                 description = "Invalid status transition or target ticket closed")
     })
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<TicketResponse>> updateTicketStatus(
             @PathVariable final UUID id, @RequestParam final TicketStatus status) {
         final TicketResponse response = ticketService.updateTicketStatus(id, status);
@@ -124,6 +127,7 @@ public class TicketController {
                 description = "Support ticket not found")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteTicket(@PathVariable final UUID id) {
         ticketService.deleteTicket(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Support ticket closed successfully"));

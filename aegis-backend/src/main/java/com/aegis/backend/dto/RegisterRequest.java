@@ -25,4 +25,6 @@ public class RegisterRequest {
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
     private String password;
+
+    private com.aegis.backend.entity.Role role;
 }

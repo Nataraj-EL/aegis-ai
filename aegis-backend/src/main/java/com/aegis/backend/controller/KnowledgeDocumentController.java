@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Knowledge Base Controller", description = "REST endpoints for managing corporate knowledge base documents")
 @RestController
 @RequestMapping("/api/v1/knowledge")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class KnowledgeDocumentController {
 
     private static final String CODE_200 = "200";
@@ -45,6 +47,7 @@ public class KnowledgeDocumentController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<KnowledgeResponse>> createDocument(
             @Valid @RequestBody final KnowledgeCreateRequest request) {
         final KnowledgeResponse response = documentService.createDocument(request);
@@ -64,6 +67,7 @@ public class KnowledgeDocumentController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Document not found")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<KnowledgeResponse>> updateDocument(
             @PathVariable final UUID id, @Valid @RequestBody final KnowledgeCreateRequest request) {
         final KnowledgeResponse response = documentService.updateDocument(id, request);
@@ -115,6 +119,7 @@ public class KnowledgeDocumentController {
                 description = "Knowledge document not found")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteDocument(@PathVariable final UUID id) {
         documentService.deleteDocument(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Knowledge document soft deleted successfully"));

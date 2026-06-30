@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,7 @@ public class ApprovalController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ApprovalResponse>> createApproval(
             @Valid @RequestBody final ApprovalCreateRequest request) {
         final String requester =
@@ -65,6 +67,7 @@ public class ApprovalController {
                 description = "Invalid request or status validation failed")
     })
     @PutMapping("/{id}/decision")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ApprovalResponse>> makeDecision(
             @PathVariable final UUID id, @Valid @RequestBody final ApprovalDecisionRequest request) {
         final String approver =
@@ -84,6 +87,7 @@ public class ApprovalController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
     @GetMapping("/pending")
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<ApprovalResponse>>> getPendingApprovals() {
         final String approver =
                 SecurityContextHolder.getContext().getAuthentication().getName();

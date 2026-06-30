@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Customer Controller", description = "REST endpoints for managing corporate customer accounts")
 @RestController
 @RequestMapping("/api/v1/customers")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class CustomerController {
 
     private static final String CODE_200 = "200";
@@ -46,6 +48,7 @@ public class CustomerController {
                 description = "Invalid input, name collision or email collision")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(
             @Valid @RequestBody final CustomerCreateRequest request) {
         final CustomerResponse response = customerService.createCustomer(request);
@@ -92,6 +95,7 @@ public class CustomerController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Customer not found")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
             @PathVariable final UUID id, @Valid @RequestBody final CustomerCreateRequest request) {
         final CustomerResponse response = customerService.updateCustomer(id, request);
@@ -106,6 +110,7 @@ public class CustomerController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Customer not found")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable final UUID id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Customer profile soft-deleted successfully"));

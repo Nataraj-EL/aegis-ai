@@ -1,6 +1,7 @@
 package com.aegis.backend.entity;
 
 public enum Role {
-    ROLE_USER,
-    ROLE_ADMIN
+    USER,
+    MANAGER,
+    ADMIN
 }

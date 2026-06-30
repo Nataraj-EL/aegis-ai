@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Procurement Controller", description = "REST endpoints for logging and searching procurement claims")
 @RestController
 @RequestMapping("/api/v1/procurements")
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class ProcurementController {
 
     private final ProcurementService procurementService;

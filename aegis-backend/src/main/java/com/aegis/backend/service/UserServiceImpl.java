@@ -36,7 +36,30 @@ public class UserServiceImpl implements UserService {
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .role(Role.ROLE_USER)
+                .role(Role.USER)
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User registerAdminCreatedUser(final RegisterRequest registerRequest) {
+        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new UsernameAlreadyExistsException(
+                    "Username '" + registerRequest.getUsername() + "' is already taken");
+        }
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new EmailAlreadyExistsException("Email '" + registerRequest.getEmail() + "' is already registered");
+        }
+
+        final Role assignedRole = registerRequest.getRole() != null ? registerRequest.getRole() : Role.USER;
+
+        final User user = User.builder()
+                .username(registerRequest.getUsername())
+                .email(registerRequest.getEmail())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(assignedRole)
                 .build();
 
         return userRepository.save(user);
