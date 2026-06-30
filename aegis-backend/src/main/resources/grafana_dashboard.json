@@ -1,0 +1,161 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "JVM Memory & CPU Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+          "legendFormat": "JVM Heap Used",
+          "refId": "A"
+        },
+        {
+          "expr": "system_cpu_usage",
+          "legendFormat": "CPU Usage",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "title": "HTTP Requests Rate & Latency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count[5m])",
+          "legendFormat": "Requests / sec",
+          "refId": "A"
+        },
+        {
+          "expr": "http_server_requests_seconds_max",
+          "legendFormat": "Max Latency",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "title": "AI Requests & Latency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(aegis_ai_requests_total_total[5m])",
+          "legendFormat": "AI Requests Rate",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(aegis_ai_requests_total_total{status=\"failure\"}[5m])",
+          "legendFormat": "AI Failures Rate",
+          "refId": "B"
+        },
+        {
+          "expr": "aegis_ai_requests_latency_seconds_max",
+          "legendFormat": "AI Latency Max",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "title": "RAG Cosine Similarity & Searches",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(aegis_rag_searches_total_total[5m])",
+          "legendFormat": "RAG Searches Rate",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "title": "Business Process Activity Counters",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(aegis_expenses_total_total[5m])",
+          "legendFormat": "Expenses Created",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(aegis_deals_total_total[5m])",
+          "legendFormat": "Deals Created/Updated",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(aegis_approvals_total_total[5m])",
+          "legendFormat": "Approvals Triggered",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(aegis_tickets_total_total[5m])",
+          "legendFormat": "Support Tickets Filed",
+          "refId": "D"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["aegis-monitoring"],
+  "title": "Aegis Business Operations Dashboard",
+  "uid": "aegis-os-dashboard",
+  "version": 1
+}

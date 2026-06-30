@@ -5,11 +5,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
       base-path: /actuator
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+
+info:
+  app:
+    name: Aegis Backend
+    description: An Agentic Business Operating System
+    version: 1.0.0
 
 spring:
   main:

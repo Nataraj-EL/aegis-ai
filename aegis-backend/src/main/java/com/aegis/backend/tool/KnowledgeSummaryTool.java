@@ -6,6 +6,7 @@ import com.aegis.backend.entity.KnowledgeDocument;
 import com.aegis.backend.entity.KnowledgeStatus;
 import com.aegis.backend.repository.KnowledgeDocumentRepository;
 import com.aegis.backend.repository.KnowledgeDocumentSpecifications;
+import com.aegis.backend.service.MetricsService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,11 +22,15 @@ public class KnowledgeSummaryTool implements Tool {
 
     private final KnowledgeDocumentRepository documentRepository;
     private final EmbeddingService embeddingService;
+    private final MetricsService metricsService;
 
     public KnowledgeSummaryTool(
-            final KnowledgeDocumentRepository documentRepository, final EmbeddingService embeddingService) {
+            final KnowledgeDocumentRepository documentRepository,
+            final EmbeddingService embeddingService,
+            final MetricsService metricsService) {
         this.documentRepository = documentRepository;
         this.embeddingService = embeddingService;
+        this.metricsService = metricsService;
     }
 
     @Override
@@ -102,6 +107,7 @@ public class KnowledgeSummaryTool implements Tool {
                 log.info("Running pgvector similarity search (threshold: {}, limit: {})...", minSimilarity, limit);
                 documents = documentRepository.findSimilarPublished(vectorString, minSimilarity, limit);
                 vectorSuccess = true;
+                metricsService.incrementRagSearch("semantic_success");
             } catch (final Exception exception) {
                 log.warn("Vector similarity search failed. Initiating keyword text fallback.", exception);
             }
@@ -119,8 +125,10 @@ public class KnowledgeSummaryTool implements Tool {
                     if (documents.size() > limit) {
                         documents = documents.subList(0, limit);
                     }
+                    metricsService.incrementRagSearch("text_fallback");
                 } catch (final Exception exception) {
                     log.error("Keyword text search fallback failed.", exception);
+                    metricsService.incrementRagSearch("failure");
                 }
             }
         }
