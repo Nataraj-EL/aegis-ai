@@ -46,6 +46,13 @@ public class MetricsService {
         registry.timer("aegis.ai.requests.latency", "model", model).record(durationMs, TimeUnit.MILLISECONDS);
     }
 
+    public void recordAiProviderRequest(final String provider, final String status, final long durationMs) {
+        registry.counter("aegis.ai.provider.requests.total", "provider", provider, TAG_STATUS, status)
+                .increment();
+        registry.timer("aegis.ai.provider.requests.latency", "provider", provider)
+                .record(durationMs, TimeUnit.MILLISECONDS);
+    }
+
     public void recordToolExecution(final String toolId, final String status, final long durationMs) {
         registry.counter("aegis.tool.executions.total", "tool", toolId, TAG_STATUS, status)
                 .increment();

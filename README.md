@@ -110,3 +110,45 @@ Open [http://localhost:3000](http://localhost:3000) to view the SaaS UI.
 - **Strict Exception Handling**: Never return raw spring stack traces. Use `AegisException` wrappers caught by `GlobalExceptionHandler`.
 - **Environment Driven**: Do not hardcode connection endpoints or API credentials. Use environment-based property placeholders.
 - **Conventional Commits**: Every commit follows structure `<type>: <description>` (e.g. `feat: scaffold frontend setup`).
+
+---
+
+## Multi-LLM Provider Architecture
+
+Aegis AI supports multiple LLM providers dynamically using a runtime abstraction layer. Active providers are instantiated only if their corresponding credentials are set in environment variables.
+
+### Supported Providers
+- **Gemini**: Exposes both `CHAT` and `EMBEDDING` capabilities. Requires `SPRING_AI_GEMINI_API_KEY`.
+- **OpenAI**: Exposes both `CHAT` and `EMBEDDING` capabilities. Requires `OPENAI_API_KEY`.
+- **Groq**: Exposes `CHAT` only. Requires `GROQ_API_KEY`.
+- **OpenRouter**: Exposes `CHAT` only. Requires `OPENROUTER_API_KEY`.
+- **Ollama**: Exposes both `CHAT` and `EMBEDDING` capabilities locally. Automatically active if `OLLAMA_BASE_URL` is configured.
+
+### Fallback Strategies
+Configure `ai.fallback-strategy` in `application.yml` or via the `AI_FALLBACK_STRATEGY` environment variable:
+1. `PRIMARY_ONLY`: Try only the configured primary provider.
+2. `FAILOVER`: Try the primary provider first, fallback to remaining prioritized providers.
+3. `PRIORITY_CHAIN`: Chain directly through the list configured in `ai.priority-list`.
+
+### Configuration Example (`application.yml` / `.env`):
+```yaml
+ai:
+  provider: gemini
+  fallback-strategy: FAILOVER
+  priority-list:
+    - gemini
+    - openai
+    - groq
+    - openrouter
+    - ollama
+  providers:
+    gemini:
+      api-key: ${SPRING_AI_GEMINI_API_KEY}
+      model: gemini-1.5-flash
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://api.openai.com/v1
+      model: gpt-4o
+```
+Masking is applied to all `apiKey` values. To inspect instantiated providers, query `GET /api/v1/ai/providers`.
+
