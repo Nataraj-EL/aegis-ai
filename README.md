@@ -152,3 +152,40 @@ ai:
 ```
 Masking is applied to all `apiKey` values. To inspect instantiated providers, query `GET /api/v1/ai/providers`.
 
+---
+
+## Docker & Production Deployment
+
+Aegis AI supports production containerization via Docker Compose.
+
+### Dockerized Services
+1. **`db` (aegis-postgres)**: PostgreSQL database container utilizing `ankane/pgvector` pre-configured with the `pgvector` extension.
+2. **`backend` (aegis-backend)**: Spring Boot container built using a multi-stage `Dockerfile`. Utilizes `layertools` for optimized dependency caching and executes as a non-root user `spring:spring` for enhanced security.
+3. **`ollama` (aegis-ollama)**: Local LLM service. Optional container run under the `ollama` compose profile.
+
+### Configuration (`.env`)
+Copy the sample `.env.example` in the root directory to `.env`:
+```bash
+cp .env.example .env
+```
+Fill in the database password, JWT secret, and LLM API keys. Docker Compose automatically injects these values on startup.
+
+### Start the Application
+Start the database and backend application containers:
+```bash
+docker compose up -d --build
+```
+This command builds the multi-stage, non-root backend image, waits for the PostgreSQL database container health check to be `healthy`, runs Flyway schema migrations, and exposes the backend service on port `8080`.
+
+To start the optional local Ollama container profile alongside the services:
+```bash
+docker compose --profile ollama up -d
+```
+
+### Health & Monitoring Inside Containers
+- **Actuator Health Check**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- **Actuator Prometheus Metrics**: [http://localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus)
+- **Swagger Documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **Container logs**: Mounted to the host `./logs` directory for easy troubleshooting and audit archiving.
+
+
