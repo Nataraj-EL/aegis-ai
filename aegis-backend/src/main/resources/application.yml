@@ -26,9 +26,9 @@ spring:
     name: aegis-backend
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aegis_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   flyway:
@@ -47,19 +47,19 @@ spring:
   ai:
     google:
       genai:
-        api-key: ${SPRING_AI_GEMINI_API_KEY}
+        api-key: ${SPRING_AI_GEMINI_API_KEY:}
         chat:
           options:
             model: gemini-1.5-flash
         embedding:
-          api-key: ${SPRING_AI_GEMINI_API_KEY}
+          api-key: ${SPRING_AI_GEMINI_API_KEY:}
           options:
             model: text-embedding-004
 
 aegis:
   security:
     jwt:
-      secret: ${AEGIS_JWT_SECRET}
+      secret: ${AEGIS_JWT_SECRET:testing_secret_key_testing_secret_key_testing_secret_key_testing_secret_key}
       expiration-ms: ${AEGIS_JWT_EXPIRATION_MS:86400000} # default 24 hours
 
 ai:
@@ -73,7 +73,7 @@ ai:
     - ollama
   providers:
     gemini:
-      api-key: ${SPRING_AI_GEMINI_API_KEY}
+      api-key: ${SPRING_AI_GEMINI_API_KEY:}
       model: gemini-1.5-flash
     openai:
       api-key: ${OPENAI_API_KEY:}
