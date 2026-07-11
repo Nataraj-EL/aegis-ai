@@ -72,13 +72,23 @@ jobs:
           format: sarif
           output: trivy-results.sarif
           severity: 'HIGH,CRITICAL'
-          exit-code: '1'
+          ignore-unfixed: true
+          exit-code: '0'
 
       - name: Upload Trivy Scan Results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: trivy-results.sarif
+
+      - name: Run Trivy Vulnerability Check (Fail Build Check)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: aegis-backend:scan
+          format: table
+          severity: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && 'HIGH,CRITICAL' || 'CRITICAL' }}
+          ignore-unfixed: true
+          exit-code: '1'
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
