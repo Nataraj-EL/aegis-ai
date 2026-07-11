@@ -1,0 +1,75 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          cache-dependency-path: 'aegis-backend/pom.xml'
+
+      - name: Run Maven Build and Verification Suite
+        run: |
+          mvn -f aegis-backend/pom.xml spotless:check clean verify
+
+      - name: Upload Surefire Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: aegis-backend/target/surefire-reports/
+          retention-days: 14
+
+      - name: Upload JaCoCo Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-reports
+          path: aegis-backend/target/site/jacoco/
+          retention-days: 14
+
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'aegis-frontend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci --prefix aegis-frontend
+
+      - name: Run Lint Checks
+        run: npm run lint --prefix aegis-frontend
+
+      - name: Run Production Build
+        run: npm run build --prefix aegis-frontend

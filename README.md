@@ -1,5 +1,9 @@
 # Aegis AI: An Agentic Business Operating System
 
+[![Continuous Integration](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/ci.yml)
+[![Build & Push Docker Image](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/docker.yml/badge.svg)](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/docker.yml)
+[![CodeQL Analysis](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Nataraj-EL/aegis-ai/actions/workflows/codeql-analysis.yml)
+
 Aegis AI is a production-quality enterprise AI application designed as an **Agentic Business Operating System**. It leverages autonomous agent orchestration, pgvector semantic search, and Google Gemini to coordinate workflows and execute memory processes.
 
 ---
@@ -187,5 +191,55 @@ docker compose --profile ollama up -d
 - **Actuator Prometheus Metrics**: [http://localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus)
 - **Swagger Documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **Container logs**: Mounted to the host `./logs` directory for easy troubleshooting and audit archiving.
+
+---
+
+## CI/CD Pipeline & DevOps Automation
+
+Aegis AI features a robust, automated production-grade CI/CD and security verification pipeline utilizing GitHub Actions and Dependabot.
+
+### 1. Workflows Overview
+
+- **Continuous Integration (`ci.yml`)**:
+  - **Backend job**: Builds and runs full Maven check suite (`spotless:check`, `pmd:check`, `pmd:cpd-check`, `checkstyle:check`, `jacoco:check`). Executes all unit and integration tests under localized Testcontainers (postgres/pgvector substitution). Uploads Surefire test reports and JaCoCo coverage reports as artifacts.
+  - **Frontend job**: Sets up Node.js v20, installs dependencies via `npm ci`, runs typescript lint checking (`npm run lint`), and builds next.js application.
+  - Runs on all pushes and pull requests to any branch. Cancels outdated runs for the same branch.
+- **Docker Image Automation (`docker.yml`)**:
+  - Automatically builds the backend Docker image using Eclipse Temurin 17 JRE.
+  - Generates tags dynamically using the commit SHA (`sha-<commit_sha>`) and tags `latest` only on releases or pushes to the default branch.
+  - **Security Scan**: Executes a Trivy vulnerability scan on the built image for `HIGH` and `CRITICAL` severity issues. Generates and uploads SARIF reports to GitHub Security. Fails the pipeline if any high/critical vulnerability is detected.
+  - **Push Rules**: Pushes the image to GitHub Container Registry (`ghcr.io`) only on pushes to the `main` branch or tag releases. No image push occurs on PRs.
+- **Release Automation (`release.yml`)**:
+  - Triggered on tag pushes matching `v*` (e.g. `v1.0.0`).
+  - Packages the production-ready backend executable JAR.
+  - Creates a GitHub Release, generates automatic release notes, and attaches the packaged backend JAR as a release asset.
+- **CodeQL Security Analysis (`codeql-analysis.yml`)**:
+  - Scans codebase for Java and JavaScript security vulnerabilities.
+  - Runs on pushes/PRs to any branch and on a weekly schedule.
+
+### 2. Required GitHub Permissions & Secrets
+
+The DevOps workflows require standard, least-privilege permissions:
+- `contents: read` (default for all CI steps)
+- `contents: write` (required by `release.yml` to publish releases and upload release assets)
+- `packages: write` (required by `docker.yml` to push built images to GHCR using `${{ secrets.GITHUB_TOKEN }}`)
+- `security-events: write` (required by `docker.yml` and `codeql-analysis.yml` to upload Trivy and CodeQL SARIF scan reports)
+
+No external API keys are required for the pipeline runs. Unit and integration tests run under the `test` Maven profile (`application-test.yml`) which mocks all external AI providers.
+
+### 3. Local Workflow Execution
+
+Workflows can be run locally using the [act](https://github.com/nektos/act) tool.
+
+To run the Backend CI locally:
+```bash
+act -j backend-ci
+```
+
+To run the Frontend CI locally:
+```bash
+act -j frontend-ci
+```
+
 
 
