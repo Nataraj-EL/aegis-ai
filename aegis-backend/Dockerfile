@@ -11,6 +11,7 @@ RUN java -Djarmode=layertools -jar target/backend-0.0.1-SNAPSHOT.jar extract
 
 # Stage 2: Runtime
 FROM eclipse-temurin:17-jre-alpine
+RUN apk update && apk upgrade --no-cache
 WORKDIR /app
 
 # Create a non-root group and user
