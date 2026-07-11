@@ -42,7 +42,7 @@ jobs:
         run: npm run build --prefix aegis-frontend
 
       - name: Create GitHub Release and Upload Asset
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             aegis-backend/target/*.jar
